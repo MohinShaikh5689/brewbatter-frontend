@@ -94,11 +94,11 @@ export default function Dashboard() {
         </div>
       ) : (
         <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center">
-            <span className="text-4xl mr-3">📋</span>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <span className="text-3xl mr-3">📋</span>
             Menu Categories
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}

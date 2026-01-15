@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { createOrder, type OrderItem } from '../services/api';
+import BillPreviewModal from './BillPreviewModal';
 
 export default function Cart() {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,6 +10,8 @@ export default function Cart() {
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
+  const [orderData, setOrderData] = useState<any>(null);
+  const [showBillPreview, setShowBillPreview] = useState(false);
   const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCart();
 
   const handleCheckout = async () => {
@@ -22,23 +25,30 @@ export default function Cart() {
         name: item.name,
       }));
 
-      const orderData = {
+      const orderDataPayload = {
         customerName,
         phone,
         items: orderItems,
       };
 
-      await createOrder(orderData);
+      const response = await createOrder(orderDataPayload);
+      console.log('Order successful:', response);
+
+      setOrderData(response.order);
       setOrderSuccess(true);
       clearCart();
       setCustomerName('');
       setPhone('');
       setShowCheckoutForm(false);
-      
-      // Show success message then close
+
+      // Show bill preview modal instead of printing immediately
+      setTimeout(() => {
+        setShowBillPreview(true);
+      }, 500);
+
+      // Close success message after 2 seconds
       setTimeout(() => {
         setOrderSuccess(false);
-        setIsOpen(false);
       }, 2000);
     } catch (error) {
       console.error('Order failed:', error);
@@ -46,6 +56,24 @@ export default function Cart() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handlePrintBill = () => {
+    window.print();
+  };
+
+  const handleCloseBillPreview = () => {
+    setShowBillPreview(false);
+    setTimeout(() => {
+      setIsOpen(false);
+      setOrderData(null);
+    }, 300);
+  };
+
+  const handleCartClose = () => {
+    // Don't close if bill preview is open
+    if (showBillPreview) return;
+    setIsOpen(false);
   };
 
   if (!isOpen && getTotalItems() > 0) {
@@ -62,13 +90,21 @@ export default function Cart() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
-      <div className="bg-white w-full md:max-w-2xl md:rounded-lg max-h-[90vh] flex flex-col">
+    <>
+      {showBillPreview && orderData && (
+        <BillPreviewModal
+          order={orderData}
+          onClose={handleCloseBillPreview}
+          onPrint={handlePrintBill}
+        />
+      )}
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
+        <div className="bg-white w-full md:max-w-2xl md:rounded-lg max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold text-gray-800">🛒 Your Cart</h2>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={handleCartClose}
             className="text-gray-500 hover:text-gray-800 text-2xl font-bold"
           >
             ✕
@@ -212,7 +248,8 @@ export default function Cart() {
             )}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

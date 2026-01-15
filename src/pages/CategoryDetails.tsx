@@ -150,31 +150,31 @@ export default function CategoryDetails() {
             </div>
           ) : (
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2 duration-300"
+                    className="bg-gradient-to-br from-white to-amber-50 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1 duration-300 border border-amber-100"
                   >
                     {item.imageUrl && (
-                      <div className="relative h-48 overflow-hidden bg-gray-200">
+                      <div className="relative h-32 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                         <img
                           src={item.imageUrl}
                           alt={item.name}
-                          className="w-full h-full object-cover hover:scale-110 transition duration-500"
+                          className="w-full h-full object-contain hover:scale-105 transition duration-500 p-2"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = 'none';
                           }}
                         />
                       </div>
                     )}
-                    <div className="p-6">
-                      <h3 className="font-bold text-xl text-gray-800 mb-2">{item.name}</h3>
-                      <p className="text-amber-700 font-bold text-lg mb-2">₹{item.price}</p>
+                    <div className="p-3">
+                      <h3 className="font-bold text-sm text-gray-800 mb-1 truncate" title={item.name}>{item.name}</h3>
+                      <p className="text-amber-700 font-bold text-base mb-2">₹{item.price}</p>
                       {item.description && (
-                        <p className="text-gray-600 text-sm mb-4">{item.description}</p>
+                        <p className="text-gray-600 text-xs mb-2 line-clamp-2" title={item.description}>{item.description}</p>
                       )}
-                      <div className="flex gap-2 mb-2">
+                      <div className="flex gap-1 mb-1">
                         <button
                           onClick={() =>
                             addToCart({
@@ -185,22 +185,22 @@ export default function CategoryDetails() {
                               type: 'item',
                             })
                           }
-                          className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold py-2 rounded-lg transition transform hover:scale-105"
+                          className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold py-1.5 text-xs rounded-lg transition transform hover:scale-105 shadow-sm"
                         >
-                          Add to Cart
+                          🛒 Add
                         </button>
                         <button
                           onClick={() => {
                             setSelectedItem(item);
                             setShowRecipeModal(true);
                           }}
-                          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition transform hover:scale-105"
+                          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-1.5 px-3 text-xs rounded-lg transition transform hover:scale-105 shadow-sm"
                         >
                           📝
                         </button>
                       </div>
-                      <p className="text-gray-400 text-xs text-center">
-                        Created: {new Date(item.created_at).toLocaleDateString()}
+                      <p className="text-gray-400 text-[10px] text-center">
+                        {new Date(item.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -239,28 +239,28 @@ export default function CategoryDetails() {
             </div>
           ) : (
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {ingredients.map((ingredient) => (
                   <div
                     key={ingredient.id}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2 duration-300"
+                    className="bg-gradient-to-br from-white to-purple-50 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1 duration-300 border border-purple-100"
                   >
                     {ingredient.image_url && (
-                      <div className="relative h-48 overflow-hidden bg-gray-200">
+                      <div className="relative h-32 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                         <img
                           src={ingredient.image_url}
                           alt={ingredient.name}
-                          className="w-full h-full object-cover hover:scale-110 transition duration-500"
+                          className="w-full h-full object-contain hover:scale-105 transition duration-500 p-2"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = 'none';
                           }}
                         />
                       </div>
                     )}
-                    <div className="p-6">
-                      <h3 className="font-bold text-xl text-gray-800 mb-2">{ingredient.name}</h3>
-                      <p className="text-purple-700 font-bold text-lg mb-2">₹{ingredient.addon_price}</p>
-                      <p className="text-gray-600 text-sm mb-4">Quantity: {ingredient.addons_quantity} {ingredient.unit}</p>
+                    <div className="p-3">
+                      <h3 className="font-bold text-sm text-gray-800 mb-1 truncate" title={ingredient.name}>{ingredient.name}</h3>
+                      <p className="text-purple-700 font-bold text-base mb-1">₹{ingredient.addon_price}</p>
+                      <p className="text-gray-600 text-xs mb-2 truncate" title={`${ingredient.addons_quantity} ${ingredient.unit}`}>Qty: {ingredient.addons_quantity} {ingredient.unit}</p>
                       <button
                         onClick={() =>
                           addToCart({
@@ -271,9 +271,9 @@ export default function CategoryDetails() {
                             type: 'addon',
                           })
                         }
-                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 rounded-lg transition transform hover:scale-105"
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-1.5 text-xs rounded-lg transition transform hover:scale-105 shadow-sm"
                       >
-                        Add to Cart
+                        🛒 Add to Cart
                       </button>
                     </div>
                   </div>

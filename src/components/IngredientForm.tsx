@@ -15,6 +15,7 @@ export default function IngredientForm({ ingredient, onSuccess, onCancel }: Ingr
     addon_quantity: '',
     addon_price: '',
     image: null as File | null,
+    reorder_level: 0,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export default function IngredientForm({ ingredient, onSuccess, onCancel }: Ingr
         addon_quantity: ingredient.addons_quantity?.toString() || '',
         addon_price: ingredient.addon_price?.toString() || '',
         image: null,
+        reorder_level: ingredient.reorder_level,
       });
       if (ingredient.image_url) {
         setPreview(ingredient.image_url);
@@ -109,11 +111,12 @@ export default function IngredientForm({ ingredient, onSuccess, onCancel }: Ingr
         if (formData.image) {
           data.append('images', formData.image);
         }
+        data.append('reorder_level', formData?.reorder_level?.toString() || '');
         await createIngredient(data);
       }
 
       setSuccess(true);
-      setFormData({ name: '', stock: '', unit: 'G', addon_quantity: '', addon_price: '', image: null });
+      setFormData({ name: '', stock: '', unit: 'G', addon_quantity: '', addon_price: '', image: null, reorder_level: 0 });
       setPreview(null);
 
       const form = e.target as HTMLFormElement;
@@ -199,6 +202,22 @@ export default function IngredientForm({ ingredient, onSuccess, onCancel }: Ingr
             <option value="G">G (Grams)</option>
             <option value="ML">ML (Milliliters)</option>
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="reorder_level" className="block text-sm font-medium text-gray-700 mb-2">
+            Reorder Level *
+          </label>
+          <input
+            type="number"
+            id="reorder_level"
+            name="reorder_level"
+            value={formData.reorder_level}
+            onChange={handleInputChange}
+            placeholder="e.g., 1000"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={loading}
+          />
         </div>
 
         <div className="border-t pt-4 mt-4">
