@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { createOrder, type OrderItem } from '../services/api';
-import BillPreviewModal from './BillPreviewModal';
 
 export default function Cart() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,7 +10,6 @@ export default function Cart() {
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [orderData, setOrderData] = useState<any>(null);
-  const [showBillPreview, setShowBillPreview] = useState(false);
   const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCart();
 
   const handleCheckout = async () => {
@@ -41,9 +39,11 @@ export default function Cart() {
       setPhone('');
       setShowCheckoutForm(false);
 
-      // Show bill preview modal instead of printing immediately
+      // Open bill preview in a new tab
       setTimeout(() => {
-        setShowBillPreview(true);
+        sessionStorage.setItem('billOrderData', JSON.stringify(response.order));
+        window.open('/bill-preview', 'billPreview', 'width=600,height=800');
+        setIsOpen(false);
       }, 500);
 
       // Close success message after 2 seconds
@@ -62,17 +62,7 @@ export default function Cart() {
     window.print();
   };
 
-  const handleCloseBillPreview = () => {
-    setShowBillPreview(false);
-    setTimeout(() => {
-      setIsOpen(false);
-      setOrderData(null);
-    }, 300);
-  };
-
   const handleCartClose = () => {
-    // Don't close if bill preview is open
-    if (showBillPreview) return;
     setIsOpen(false);
   };
 
@@ -91,13 +81,6 @@ export default function Cart() {
 
   return (
     <>
-      {showBillPreview && orderData && (
-        <BillPreviewModal
-          order={orderData}
-          onClose={handleCloseBillPreview}
-          onPrint={handlePrintBill}
-        />
-      )}
       <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
         <div className="bg-white w-full md:max-w-2xl md:rounded-lg max-h-[90vh] flex flex-col">
         {/* Header */}

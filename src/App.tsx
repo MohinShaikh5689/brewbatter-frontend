@@ -4,6 +4,7 @@ import './App.css';
 import Dashboard from './pages/Dashboard';
 import CategoryDetails from './pages/CategoryDetails';
 import Ingredients from './pages/Ingredients';
+import BillPreviewPage from './components/BillPreviewPage';
 import { CartProvider } from './context/CartContext';
 import Cart from './components/Cart';
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/category/:categoryId" element={<CategoryDetails />} />
             <Route path="/inventory" element={<Ingredients />} />
+            <Route path="/bill-preview" element={<BillPreviewPage />} />
           </Routes>
           <Cart />
         </BrowserRouter>

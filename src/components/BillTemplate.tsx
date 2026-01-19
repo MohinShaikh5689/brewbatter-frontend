@@ -24,209 +24,93 @@ interface BillTemplateProps {
 const BillTemplate: React.FC<BillTemplateProps> = ({ order }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
+    return date.toLocaleString('en-IN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit',
       hour12: true,
     });
   };
 
+  const pad = (s: string, length: number, dir: 'left' | 'right' = 'right') => {
+    const str = s ?? '';
+    if (str.length > length) return str.slice(0, length);
+    return dir === 'right' ? str.padEnd(length, ' ') : str.padStart(length, ' ');
+  };
+
+  const wrapText = (text: string, maxLength: number): string[] => {
+    if (text.length <= maxLength) return [text];
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    words.forEach((word) => {
+      if ((currentLine + word).length <= maxLength) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+
+  const lines: string[] = [];
+ 
+  lines.push(' Premium Quality');
+  lines.push('Food & Beverages');
+  lines.push('Taste the Craft, Experience the Quality');
+  lines.push('');
+  lines.push('----------------------------');
+  lines.push(`Bill No: ${order.id.slice(0, 8).toUpperCase()}`);
+  lines.push(`Date: ${formatDate(order.created_at)}`);
+  lines.push(`Customer: ${order.customerName}`);
+  lines.push(`Phone: ${order.phone}`);
+  lines.push('----------------------------');
+  lines.push(pad('Item', 18) + ' ' + pad('Qty', 3, 'left') + ' ' + pad('Rate', 6, 'left'));
+  lines.push('');
+
+  order.orderItems.forEach((item) => {
+    const rate = item.unit_price.toFixed(2);
+    const wrappedName = wrapText(item.itemName, 18);
+    
+    // First line with quantity and rate
+    lines.push(
+      pad(wrappedName[0], 18) + ' ' + pad(String(item.quantity), 3, 'left') + ' ' + pad(rate, 6, 'left')
+    );
+    
+    // Additional lines for wrapped text (without quantity and rate)
+    for (let i = 1; i < wrappedName.length; i++) {
+      lines.push(pad(wrappedName[i], 18));
+    }
+  });
+
+  lines.push('');
+  const subtotal = Number(order.total_amount ?? order.orderItems.reduce((s, it) => s + it.quantity * it.unit_price, 0));
+  lines.push(pad('Total:', 18) + ' ' + pad('', 3) + ' ' + pad(subtotal.toFixed(2), 6, 'left'));
+
+  lines.push('');
+  lines.push(`ORDER STATUS: ${order.status}`);
+  lines.push('');
+  lines.push('Thank you for your order!');
+  lines.push('Please keep this bill for your');
+  lines.push('records');
+  lines.push('Contact: +91-7208749700');
+  lines.push('www.brewbatter.com');
+  lines.push('BREWBATTER');
+  lines.push('');
+  lines.push('');
+  lines.push('');
+  lines.push('');
+
+  const text = lines.join('\n');
+
   return (
-    <div
-      id="bill-template"
-      className="hidden print:block"
-      style={{
-        padding: '0',
-        margin: '0',
-        fontFamily: 'Arial, sans-serif',
-      }}
-    >
-      <style>{`
-        @media print {
-          body {
-            margin: 0;
-            padding: 0;
-            background: white;
-          }
-          
-          #bill-template {
-            width: 80mm;
-            margin: 0 auto;
-            padding: 10mm;
-            background: white;
-            page-break-after: avoid;
-          }
-          
-          .bill-container {
-            width: 100%;
-            max-width: 80mm;
-          }
-          
-          .text-center {
-            text-align: center;
-          }
-          
-          .text-right {
-            text-align: right;
-          }
-          
-          .border-top {
-            border-top: 1px dashed #333;
-          }
-          
-          .border-bottom {
-            border-bottom: 1px dashed #333;
-          }
-          
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 8px 0;
-          }
-          
-          td, th {
-            padding: 4px 0;
-            font-size: 11px;
-          }
-          
-          th {
-            text-align: left;
-            border-bottom: 1px solid #333;
-          }
-        }
-      `}</style>
-
-      <div className="bill-container">
-        {/* Header */}
-        <div className="text-center mb-3" style={{ paddingBottom: '8px' }}>
-          <h1
-            style={{
-              margin: '0 0 4px 0',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              letterSpacing: '2px',
-            }}
-          >
-            🍶 BREWBATTER
-          </h1>
-          <p style={{ margin: '2px 0', fontSize: '10px', color: '#666' }}>
-            Premium Quality Food & Beverages
-          </p>
-          <p style={{ margin: '2px 0', fontSize: '9px', color: '#999' }}>
-            Taste the Craft, Experience the Quality
-          </p>
-        </div>
-
-        <div style={{ borderTop: '1px dashed #333', borderBottom: '1px dashed #333', padding: '8px 0' }}>
-          {/* Order Info */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
-            <div>
-              <strong>Bill No:</strong> {order.id.slice(0, 8).toUpperCase()}
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <strong>Date:</strong> {formatDate(order.created_at)}
-            </div>
-          </div>
-
-          {/* Customer Info */}
-          <div style={{ fontSize: '11px', marginBottom: '4px' }}>
-            <div>
-              <strong>Customer:</strong> {order.customerName}
-            </div>
-            <div>
-              <strong>Phone:</strong> {order.phone}
-            </div>
-          </div>
-        </div>
-
-        {/* Items Table */}
-        <table style={{ margin: '8px 0' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #333' }}>
-              <th style={{ textAlign: 'left', fontSize: '10px', paddingBottom: '4px' }}>Item</th>
-              <th style={{ textAlign: 'center', fontSize: '10px', width: '30px' }}>Qty</th>
-              <th style={{ textAlign: 'right', fontSize: '10px' }}>Rate</th>
-              <th style={{ textAlign: 'right', fontSize: '10px' }}>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.orderItems.map((item) => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ fontSize: '10px', paddingTop: '3px', paddingBottom: '3px' }}>
-                  {item.itemName}
-                </td>
-                <td style={{ textAlign: 'center', fontSize: '10px', paddingTop: '3px', paddingBottom: '3px' }}>
-                  {item.quantity}
-                </td>
-                <td style={{ textAlign: 'right', fontSize: '10px', paddingTop: '3px', paddingBottom: '3px' }}>
-                  ₹{item.unit_price}
-                </td>
-                <td style={{ textAlign: 'right', fontSize: '10px', paddingTop: '3px', paddingBottom: '3px' }}>
-                  ₹{(item.quantity * item.unit_price).toFixed(2)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Total Section */}
-        <div
-          style={{
-            borderTop: '1px dashed #333',
-            borderBottom: '1px dashed #333',
-            padding: '8px 0',
-            marginTop: '8px',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-            <span>Subtotal:</span>
-            <span>₹{(order.total_amount).toFixed(2)}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-            <span>Tax (0%):</span>
-            <span>₹0.00</span>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '13px',
-              fontWeight: 'bold',
-              marginTop: '4px',
-              paddingTop: '4px',
-              borderTop: '1px solid #333',
-            }}
-          >
-            <span>Total Amount:</span>
-            <span>₹{(order.total_amount).toFixed(2)}</span>
-          </div>
-        </div>
-
-        {/* Status */}
-        <div style={{ textAlign: 'center', margin: '8px 0', fontSize: '11px' }}>
-          <div style={{ fontWeight: 'bold', color: '#27ae60' }}>ORDER STATUS: {order.status}</div>
-        </div>
-
-        {/* Footer */}
-        <div style={{ textAlign: 'center', marginTop: '12px', paddingTop: '8px', borderTop: '1px dashed #333' }}>
-          <p style={{ margin: '4px 0', fontSize: '10px', color: '#666' }}>
-            Thank you for your order!
-          </p>
-          <p style={{ margin: '2px 0', fontSize: '9px', color: '#999' }}>
-            Please keep this bill for your records
-          </p>
-          <p style={{ margin: '4px 0 0 0', fontSize: '8px', color: '#999' }}>
-            www.brewbatter.com | Contact: +91-7208749700
-          </p>
-          <div style={{ marginTop: '8px', fontSize: '9px', color: '#999' }}>
-            ✓ Printed on: {new Date().toLocaleString('en-IN')}
-          </div>
-        </div>
-      </div>
+    <div id="bill-template" className="hidden print:block" style={{ padding: '10px', margin: 0, pageBreakAfter: 'always' }}>
+      <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: '1.3' }}>{text}</pre>
     </div>
   );
 };

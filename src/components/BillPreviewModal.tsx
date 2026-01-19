@@ -26,16 +26,85 @@ interface BillPreviewModalProps {
 const BillPreviewModal: React.FC<BillPreviewModalProps> = ({ order, onClose, onPrint }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
+    return date.toLocaleString('en-IN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit',
       hour12: true,
     });
   };
+
+  const pad = (s: string, length: number, dir: 'left' | 'right' = 'right') => {
+    const str = s ?? '';
+    if (str.length > length) return str.slice(0, length);
+    return dir === 'right' ? str.padEnd(length, ' ') : str.padStart(length, ' ');
+  };
+
+  const wrapText = (text: string, maxLength: number): string[] => {
+    if (text.length <= maxLength) return [text];
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    words.forEach((word) => {
+      if ((currentLine + word).length <= maxLength) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+
+  const lines: string[] = [];
+  lines.push('BREWBATTER');
+  lines.push('Premium Quality Food & Beverages');
+  lines.push('Taste the Craft, Experience the Quality');
+  lines.push('');
+  lines.push('----------------------------');
+  lines.push(`Bill No: ${order.id.slice(0, 8).toUpperCase()}`);
+  lines.push(`Date: ${formatDate(order.created_at)}`);
+  lines.push(`Customer: ${order.customerName}`);
+  lines.push(`Phone: ${order.phone}`);
+  lines.push('----------------------------');
+  lines.push(pad('Item', 18) + ' ' + pad('Qty', 3, 'left') + ' ' + pad('Rate', 6, 'left'));
+  lines.push('');
+
+  order.orderItems.forEach((item) => {
+    const rate = item.unit_price.toFixed(2);
+    const wrappedName = wrapText(item.itemName, 18);
+    
+    // First line with quantity and rate
+    lines.push(
+      pad(wrappedName[0], 18) + ' ' + pad(String(item.quantity), 3, 'left') + ' ' + pad(rate, 6, 'left')
+    );
+    
+    // Additional lines for wrapped text (without quantity and rate)
+    for (let i = 1; i < wrappedName.length; i++) {
+      lines.push(pad(wrappedName[i], 18));
+    }
+  });
+
+  lines.push('');
+  const subtotal = Number(order.total_amount ?? order.orderItems.reduce((s, it) => s + it.quantity * it.unit_price, 0));
+  lines.push(pad('Total:', 18) + ' ' + pad('', 3) + ' ' + pad(subtotal.toFixed(2), 6, 'left'));
+
+  lines.push('');
+  lines.push(`ORDER STATUS: ${order.status}`);
+  lines.push('');
+  lines.push('Thank you for your order!');
+  lines.push('Please keep this bill for your');
+  lines.push('records');
+  lines.push('Contact: +91-7208749700');
+  lines.push('www.brewbatter.com');
+  lines.push('');
+  lines.push(`Printed on: ${new Date().toLocaleString('en-IN')}`);
+
+  const billText = lines.join('\n');
 
   return (
     <div className="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4">
@@ -52,83 +121,10 @@ const BillPreviewModal: React.FC<BillPreviewModalProps> = ({ order, onClose, onP
         </div>
 
         {/* Bill Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white" style={{ fontFamily: 'Arial, sans-serif' }}>
-          {/* Restaurant Header */}
-          <div className="text-center mb-4 pb-4 border-b-2 border-dashed border-gray-400">
-            <h1 className="text-2xl font-bold mb-1">🍶 BREWBATTER</h1>
-            <p className="text-xs text-gray-600 mb-1">Premium Quality Food & Beverages</p>
-            <p className="text-xs text-gray-500">Taste the Craft, Experience the Quality</p>
-          </div>
-
-          {/* Order Info */}
-          <div className="text-xs space-y-2 mb-4 pb-4 border-b-2 border-dashed border-gray-400">
-            <div className="flex justify-between">
-              <span className="font-semibold">Bill No:</span>
-              <span>{order.id.slice(0, 8).toUpperCase()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Date:</span>
-              <span>{formatDate(order.created_at)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Customer:</span>
-              <span>{order.customerName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Phone:</span>
-              <span>{order.phone}</span>
-            </div>
-          </div>
-
-          {/* Items Table */}
-          <div className="text-xs mb-4 pb-4 border-b-2 border-dashed border-gray-400">
-            <div className="flex justify-between font-bold mb-2 pb-2 border-b border-gray-300">
-              <span className="flex-1">Item</span>
-              <span className="w-12 text-center">Qty</span>
-              <span className="w-16 text-right">Rate</span>
-              <span className="w-16 text-right">Amount</span>
-            </div>
-            {order.orderItems.map((item) => (
-              <div key={item.id} className="flex justify-between mb-2 border-b border-gray-100 pb-2">
-                <span className="flex-1 text-gray-700">{item.itemName}</span>
-                <span className="w-12 text-center">{item.quantity}</span>
-                <span className="w-16 text-right">₹{item.unit_price}</span>
-                <span className="w-16 text-right font-semibold">
-                  ₹{(item.quantity * item.unit_price).toFixed(2)}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Totals */}
-          <div className="text-xs space-y-2 mb-4 pb-4 border-b-2 border-dashed border-gray-400">
-            <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span>₹{order.total_amount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Tax (0%):</span>
-              <span>₹0.00</span>
-            </div>
-            <div className="flex justify-between font-bold text-sm mt-2 pt-2 border-t border-gray-400">
-              <span>Total Amount:</span>
-              <span className="text-green-700">₹{order.total_amount.toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="text-center mb-4 pb-4 border-b-2 border-dashed border-gray-400">
-            <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded text-xs font-bold">
-              STATUS: {order.status}
-            </span>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center text-xs text-gray-600 space-y-1">
-            <p className="font-semibold">Thank you for your order!</p>
-            <p>Please keep this bill for your records</p>
-            <p className="text-gray-500">www.brewbatter.com</p>
-          </div>
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
+          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: 11, lineHeight: 1.4, whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+            {billText}
+          </pre>
         </div>
 
         {/* Action Buttons */}
