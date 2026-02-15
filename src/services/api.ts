@@ -198,6 +198,36 @@ export const deleteIngredient = async (ingredientId: string) => {
 };
 
 // Order API
+export interface Order {
+  id: string;
+  created_at: string;
+  customerName: string;
+  phone: string;
+  total_amount: number;
+  status: string;
+}
+
+export interface OrderItemDetail {
+  id: string;
+  orderId: string;
+  menuItemTypeId: string | null;
+  ingredientId: string | null;
+  itemName: string;
+  quantity: number;
+  unit_price: number;
+  created_at: string;
+}
+
+export interface OrderDetails {
+  id: string;
+  created_at: string;
+  customerName: string;
+  phone: string;
+  total_amount: number;
+  status: string;
+  orderItems: OrderItemDetail[];
+}
+
 export interface OrderItem {
   itemId?: string;
   addonId?: string;
@@ -205,6 +235,27 @@ export interface OrderItem {
   quantity: number;
   price: number;
 }
+
+export const getOrders = async (cursor?: string) => {
+  try {
+    const url = cursor ? `/controller/orders?cursor=${cursor}` : '/controller/orders';
+    const response = await apiClient.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
+  }
+};
+
+export const getOrderDetails = async (orderId: string) => {
+  try {
+    const response = await apiClient.get(`/controller/orders/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    throw error;
+  }
+};
 
 export const createOrder = async (orderData: { customerName: string; phone: string; items: OrderItem[] }) => {
   try {
@@ -219,6 +270,7 @@ export const createOrder = async (orderData: { customerName: string; phone: stri
     throw error;
   }
 };
+
 
 export default apiClient;
 

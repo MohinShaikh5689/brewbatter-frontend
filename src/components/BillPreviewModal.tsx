@@ -61,48 +61,43 @@ const BillPreviewModal: React.FC<BillPreviewModalProps> = ({ order, onClose, onP
   };
 
   const lines: string[] = [];
-  lines.push('BREWBATTER');
-  lines.push('Premium Quality Food & Beverages');
-  lines.push('Taste the Craft, Experience the Quality');
-  lines.push('');
-  lines.push('----------------------------');
+  lines.push('--------------------------------');
   lines.push(`Bill No: ${order.id.slice(0, 8).toUpperCase()}`);
   lines.push(`Date: ${formatDate(order.created_at)}`);
   lines.push(`Customer: ${order.customerName}`);
   lines.push(`Phone: ${order.phone}`);
-  lines.push('----------------------------');
-  lines.push(pad('Item', 18) + ' ' + pad('Qty', 3, 'left') + ' ' + pad('Rate', 6, 'left'));
-  lines.push('');
+  lines.push('--------------------------------');
+  lines.push(pad('Item', 14) + pad('Qty', 4, 'left') + pad('Rate', 8, 'left'));
+  lines.push('--------------------------------');
 
   order.orderItems.forEach((item) => {
-    const rate = item.unit_price.toFixed(2);
-    const wrappedName = wrapText(item.itemName, 18);
+    const rate = item.unit_price.toFixed(0);
+    const wrappedName = wrapText(item.itemName, 14);
     
     // First line with quantity and rate
     lines.push(
-      pad(wrappedName[0], 18) + ' ' + pad(String(item.quantity), 3, 'left') + ' ' + pad(rate, 6, 'left')
+      pad(wrappedName[0], 14) + pad(String(item.quantity), 4, 'left') + pad('₹' + rate, 8, 'left')
     );
     
     // Additional lines for wrapped text (without quantity and rate)
     for (let i = 1; i < wrappedName.length; i++) {
-      lines.push(pad(wrappedName[i], 18));
+      lines.push(pad(wrappedName[i], 14));
     }
   });
 
-  lines.push('');
+  lines.push('--------------------------------');
   const subtotal = Number(order.total_amount ?? order.orderItems.reduce((s, it) => s + it.quantity * it.unit_price, 0));
-  lines.push(pad('Total:', 18) + ' ' + pad('', 3) + ' ' + pad(subtotal.toFixed(2), 6, 'left'));
+  lines.push(pad('TOTAL:', 14) + pad('', 4) + pad('₹' + subtotal.toFixed(0), 8, 'left'));
+  lines.push('--------------------------------');
 
   lines.push('');
-  lines.push(`ORDER STATUS: ${order.status}`);
+  lines.push(`Status: ${order.status}`);
   lines.push('');
   lines.push('Thank you for your order!');
-  lines.push('Please keep this bill for your');
-  lines.push('records');
+  lines.push('');
   lines.push('Contact: +91-7208749700');
   lines.push('www.brewbatter.com');
   lines.push('');
-  lines.push(`Printed on: ${new Date().toLocaleString('en-IN')}`);
 
   const billText = lines.join('\n');
 
@@ -122,7 +117,13 @@ const BillPreviewModal: React.FC<BillPreviewModalProps> = ({ order, onClose, onP
 
         {/* Bill Content */}
         <div className="flex-1 overflow-y-auto p-6 bg-white">
-          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: 11, lineHeight: 1.4, whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+          <div style={{ marginBottom: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <img src="/assets/react.svg" alt="Logo" style={{ width: '40px', height: '40px' }} />
+            <div style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 'bold' }}>BREWBATTER</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 12 }}>Premium Quality</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 12 }}>Food & Beverages</div>
+          </div>
+          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap', wordWrap: 'break-word', textAlign: 'left' }}>
             {billText}
           </pre>
         </div>

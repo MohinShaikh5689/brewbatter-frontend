@@ -1,4 +1,5 @@
 import React from 'react';
+import image from '/assets/react.svg';
 
 interface OrderItem {
   id: string;
@@ -60,47 +61,42 @@ const BillTemplate: React.FC<BillTemplateProps> = ({ order }) => {
 
   const lines: string[] = [];
  
-  lines.push(' Premium Quality');
-  lines.push('Food & Beverages');
-  lines.push('Taste the Craft, Experience the Quality');
-  lines.push('');
   lines.push('----------------------------');
   lines.push(`Bill No: ${order.id.slice(0, 8).toUpperCase()}`);
   lines.push(`Date: ${formatDate(order.created_at)}`);
   lines.push(`Customer: ${order.customerName}`);
   lines.push(`Phone: ${order.phone}`);
   lines.push('----------------------------');
-  lines.push(pad('Item', 18) + ' ' + pad('Qty', 3, 'left') + ' ' + pad('Rate', 6, 'left'));
-  lines.push('');
+  lines.push(pad('Item', 14) + pad('Qty', 4, 'left') + pad('Rate', 8, 'left'));
+  lines.push('----------------------------');
 
   order.orderItems.forEach((item) => {
-    const rate = item.unit_price.toFixed(2);
-    const wrappedName = wrapText(item.itemName, 18);
+    const rate = item.unit_price.toFixed(0);
+    const wrappedName = wrapText(item.itemName, 14);
     
     // First line with quantity and rate
     lines.push(
-      pad(wrappedName[0], 18) + ' ' + pad(String(item.quantity), 3, 'left') + ' ' + pad(rate, 6, 'left')
+      pad(wrappedName[0], 14) + pad(String(item.quantity), 4, 'left') + pad('₹' + rate, 8, 'left')
     );
     
     // Additional lines for wrapped text (without quantity and rate)
     for (let i = 1; i < wrappedName.length; i++) {
-      lines.push(pad(wrappedName[i], 18));
+      lines.push(pad(wrappedName[i], 14));
     }
   });
 
-  lines.push('');
+  lines.push('----------------------------');
   const subtotal = Number(order.total_amount ?? order.orderItems.reduce((s, it) => s + it.quantity * it.unit_price, 0));
-  lines.push(pad('Total:', 18) + ' ' + pad('', 3) + ' ' + pad(subtotal.toFixed(2), 6, 'left'));
+  lines.push(pad('TOTAL:', 14) + pad('', 4) + pad('₹' + subtotal.toFixed(0), 8, 'left'));
+  lines.push('----------------------------');
 
   lines.push('');
-  lines.push(`ORDER STATUS: ${order.status}`);
+  lines.push(`Status: ${order.status}`);
   lines.push('');
   lines.push('Thank you for your order!');
-  lines.push('Please keep this bill for your');
-  lines.push('records');
+  lines.push('');
   lines.push('Contact: +91-7208749700');
   lines.push('www.brewbatter.com');
-  lines.push('BREWBATTER');
   lines.push('');
   lines.push('');
   lines.push('');
@@ -109,8 +105,14 @@ const BillTemplate: React.FC<BillTemplateProps> = ({ order }) => {
   const text = lines.join('\n');
 
   return (
-    <div id="bill-template" className="hidden print:block" style={{ padding: '10px', margin: 0, pageBreakAfter: 'always' }}>
-      <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: '1.3' }}>{text}</pre>
+    <div id="bill-template" className="hidden print:block" style={{ padding: 0, margin: 0, width: '58mm', pageBreakAfter: 'always' }}>
+      <div style={{ marginBottom: '4px', display: 'flex', flexDirection: 'column', marginLeft: '50px' }}>
+        <img src={image} alt="Logo" style={{ width: '40px', height: '40px', marginLeft: '30px' }} />
+        <div style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 'bold', marginLeft: '10px' }}>BREWBATTER</div>
+        <div style={{ fontFamily: 'monospace', fontSize: 12, marginLeft: '5px' }}>Premium Quality</div>
+        <div style={{ fontFamily: 'monospace', fontSize: 12, marginLeft: '4px' }}>Food & Beverages</div>
+      </div>
+      <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: 14, whiteSpace: 'pre-wrap', lineHeight: '1.4', textAlign: 'left' }}>{text}</pre>
     </div>
   );
 };
