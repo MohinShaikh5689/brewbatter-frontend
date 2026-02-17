@@ -1,5 +1,4 @@
 import React from 'react';
-import image from '/assets/react.svg';
 
 interface OrderItem {
   id: string;
@@ -119,7 +118,6 @@ const BillTemplate: React.FC<BillTemplateProps> = ({ order }) => {
   return (
     <div id="bill-template" className="hidden print:block" style={{ padding: 0, margin: 0, width: '58mm', pageBreakAfter: 'always' }}>
       <div style={{ marginBottom: '4px', display: 'flex', flexDirection: 'column', marginLeft: '50px' }}>
-        <img src={image} alt="Logo" style={{ width: '40px', height: '40px', marginLeft: '30px' }} />
         <div style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 'bold', marginLeft: '10px' }}>BREWBATTER</div>
         <div style={{ fontFamily: 'monospace', fontSize: 12, marginLeft: '5px' }}>Premium Quality</div>
         <div style={{ fontFamily: 'monospace', fontSize: 12, marginLeft: '4px' }}>Food & Beverages</div>

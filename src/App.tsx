@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import CategoryDetails from './pages/CategoryDetails';
 import Ingredients from './pages/Ingredients';
 import BillPreviewPage from './components/BillPreviewPage';
+import KOTPreviewPage from './components/KOTPreviewPage';
 import { CartProvider } from './context/CartContext';
 import Cart from './components/Cart';
 import Orders from './pages/Orders';
@@ -26,6 +27,7 @@ function App() {
             <Route path="/category/:categoryId" element={<CategoryDetails />} />
             <Route path="/inventory" element={<Ingredients />} />
             <Route path="/bill-preview" element={<BillPreviewPage />} />
+            <Route path="/kot-preview" element={<KOTPreviewPage />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetails />} />
           </Routes>

@@ -37,10 +37,12 @@ export default function Cart() {
       setPhone('');
       setShowCheckoutForm(false);
 
-      // Open bill preview in a new tab
+      // Open bill preview and KOT in new tabs
       setTimeout(() => {
         sessionStorage.setItem('billOrderData', JSON.stringify(response.order));
-        window.open('/bill-preview', 'billPreview', 'width=600,height=800');
+        sessionStorage.setItem('kotOrderData', JSON.stringify(response.order));
+        window.open(`${window.location.origin}/bill-preview`, 'billPreview', 'width=600,height=800');
+        window.open(`${window.location.origin}/kot-preview`, 'kotPreview', 'width=600,height=800');
         setIsOpen(false);
       }, 500);
 
