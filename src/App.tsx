@@ -8,6 +8,7 @@ import BillPreviewPage from './components/BillPreviewPage';
 import { CartProvider } from './context/CartContext';
 import Cart from './components/Cart';
 import Orders from './pages/Orders';
+import OrderDetails from './pages/OrderDetails';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="/inventory" element={<Ingredients />} />
             <Route path="/bill-preview" element={<BillPreviewPage />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/orders/:orderId" element={<OrderDetails />} />
           </Routes>
           <Cart />
         </BrowserRouter>
