@@ -9,7 +9,6 @@ export default function Cart() {
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
-  const [orderData, setOrderData] = useState<any>(null);
   const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCart();
 
   const handleCheckout = async () => {
@@ -32,7 +31,6 @@ export default function Cart() {
       const response = await createOrder(orderDataPayload);
       console.log('Order successful:', response);
 
-      setOrderData(response.order);
       setOrderSuccess(true);
       clearCart();
       setCustomerName('');
@@ -57,11 +55,6 @@ export default function Cart() {
       setIsProcessing(false);
     }
   };
-
-  const handlePrintBill = () => {
-    window.print();
-  };
-
   const handleCartClose = () => {
     setIsOpen(false);
   };

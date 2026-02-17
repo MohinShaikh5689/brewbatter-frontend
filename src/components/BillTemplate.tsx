@@ -67,36 +67,48 @@ const BillTemplate: React.FC<BillTemplateProps> = ({ order }) => {
   lines.push(`Customer: ${order.customerName}`);
   lines.push(`Phone: ${order.phone}`);
   lines.push('----------------------------');
-  lines.push(pad('Item', 14) + pad('Qty', 4, 'left') + pad('Rate', 8, 'left'));
+  lines.push(pad('Item', 9) + pad('Qty', 3, 'left') + pad('Rate', 6, 'left') + pad('Total', 8, 'left'));
   lines.push('----------------------------');
 
   order.orderItems.forEach((item) => {
     const rate = item.unit_price.toFixed(0);
-    const wrappedName = wrapText(item.itemName, 14);
+    const itemTotal = (item.quantity * item.unit_price).toFixed(0);
+    const wrappedName = wrapText(item.itemName, 9);
     
-    // First line with quantity and rate
+    // First line with quantity, rate and total
     lines.push(
-      pad(wrappedName[0], 14) + pad(String(item.quantity), 4, 'left') + pad('₹' + rate, 8, 'left')
+      pad(wrappedName[0], 9) + pad(String(item.quantity), 3, 'left') + pad('₹' + rate, 6, 'left') + pad('₹' + itemTotal, 8, 'left')
     );
     
-    // Additional lines for wrapped text (without quantity and rate)
+    // Additional lines for wrapped text (without quantity, rate and total)
     for (let i = 1; i < wrappedName.length; i++) {
-      lines.push(pad(wrappedName[i], 14));
+      lines.push(pad(wrappedName[i], 9));
     }
   });
 
   lines.push('----------------------------');
-  const subtotal = Number(order.total_amount ?? order.orderItems.reduce((s, it) => s + it.quantity * it.unit_price, 0));
-  lines.push(pad('TOTAL:', 14) + pad('', 4) + pad('₹' + subtotal.toFixed(0), 8, 'left'));
+  const subtotal = order.orderItems.reduce((s, it) => s + it.quantity * it.unit_price, 0);
+  const total = Number(order.total_amount ?? subtotal);
+  
+  lines.push(pad('Subtotal:', 14) + pad('', 4) + pad('₹' + subtotal.toFixed(0), 8, 'left'));
+  
+  // Add tax/charges if total differs from subtotal
+  const diff = total - subtotal;
+  if (Math.abs(diff) > 0.01) {
+    const label = diff > 0 ? 'Tax/Charges:' : 'Discount:';
+    lines.push(pad(label, 14) + pad('', 4) + pad('₹' + Math.abs(diff).toFixed(0), 8, 'left'));
+  }
+  
   lines.push('----------------------------');
+
 
   lines.push('');
   lines.push(`Status: ${order.status}`);
   lines.push('');
   lines.push('Thank you for your order!');
   lines.push('');
-  lines.push('Contact: +91-7208749700');
-  lines.push('www.brewbatter.com');
+  lines.push(`Contact: ${import.meta.env.VITE_CONTACT_NUMBER}`);
+  lines.push('www.brewbatter.in');
   lines.push('');
   lines.push('');
   lines.push('');
