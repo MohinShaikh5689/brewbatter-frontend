@@ -8,26 +8,20 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchOrders = async (cursorParam?: string | null) => {
+  const fetchOrders = async (page: number = 1) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getOrders(cursorParam || undefined);
+      const data = await getOrders(page);
       setOrders(data.orders || data);
       
       // Check if there are more orders to fetch
-      // Assuming API returns less than expected when no more data
-      setHasMore(data.orders?.length === 10 || data.length === 10);
-      
-      // Get the last order's ID as the next cursor
-      const lastOrder = data.orders?.[data.orders.length - 1] || data[data.length - 1];
-      if (lastOrder) {
-        setCursor(lastOrder.id);
-      }
+      // If we get less than 10 orders, we're on the last page
+      setHasMore((data.orders || data).length === 10);
+      setCurrentPage(page);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch orders');
       setOrders([]);
@@ -37,21 +31,19 @@ export default function Orders() {
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrders(1);
   }, []);
 
   const handleNextPage = () => {
-    if (cursor && hasMore) {
-      fetchOrders(cursor);
-      setCurrentPage(prev => prev + 1);
+    if (hasMore) {
+      fetchOrders(currentPage + 1);
     }
   };
 
   const handlePreviousPage = () => {
-    // Reset to first page
-    setCursor(null);
-    setCurrentPage(1);
-    fetchOrders();
+    if (currentPage > 1) {
+      fetchOrders(currentPage - 1);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -174,14 +166,14 @@ export default function Orders() {
             <div className="mt-6 flex justify-between items-center">
               <button
                 onClick={handlePreviousPage}
-                disabled={!cursor}
+                disabled={currentPage === 1}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  cursor
+                  currentPage > 1
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                First Page
+                Previous Page
               </button>
               <div className="text-center">
                 <span className="text-sm text-gray-600">

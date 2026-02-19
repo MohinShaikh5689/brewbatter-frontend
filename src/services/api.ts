@@ -236,10 +236,9 @@ export interface OrderItem {
   price: number;
 }
 
-export const getOrders = async (cursor?: string) => {
+export const getOrders = async (page: number = 1) => {
   try {
-    const url = cursor ? `/controller/orders?cursor=${cursor}` : '/controller/orders';
-    const response = await apiClient.get(url);
+    const response = await apiClient.get(`/controller/orders?page=${page}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching orders:', error);
