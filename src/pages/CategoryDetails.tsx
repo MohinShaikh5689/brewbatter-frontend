@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
-import { getCategoryItems, getIngredients, type CategoryItem, type Ingredient } from '../services/api';
+import { getCategoryItems, getIngredients, updateCategoryItem, deleteCategoryItem, type CategoryItem, type Ingredient } from '../services/api';
 import Layout from '../components/Layout';
 import ItemForm from '../components/ItemForm';
 import RecipeModal from '../components/RecipeModal';
@@ -28,6 +28,12 @@ export default function CategoryDetails() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loadingIngredients, setLoadingIngredients] = useState(false);
   const [errorIngredients, setErrorIngredients] = useState<string | null>(null);
+
+  // Edit state
+  const [editingItem, setEditingItem] = useState<CategoryItem | null>(null);
+  const [editFormData, setEditFormData] = useState({ name: '', price: 0, description: '' });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const fetchItems = async () => {
     if (!categoryId) return;
@@ -74,6 +80,58 @@ export default function CategoryDetails() {
   const handleItemCreated = () => {
     setRefreshTrigger((prev) => prev + 1);
     setShowForm(false);
+  };
+
+  const handleEditClick = (item: CategoryItem) => {
+    setEditingItem(item);
+    setEditFormData({
+      name: item.name,
+      price: item.price,
+      description: item.description || '',
+    });
+    setEditError(null);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    if (!editFormData.name.trim()) {
+      setEditError('Please enter an item name');
+      return;
+    }
+
+    if (!editFormData.price || editFormData.price <= 0) {
+      setEditError('Please enter a valid price');
+      return;
+    }
+
+    setEditLoading(true);
+    try {
+      await updateCategoryItem(editingItem.id, {
+        name: editFormData.name,
+        price: editFormData.price,
+        description: editFormData.description,
+      });
+      setRefreshTrigger((prev) => prev + 1);
+      setEditingItem(null);
+      setEditError(null);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'Failed to update item');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDeleteClick = async (itemId: string) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+
+    try {
+      await deleteCategoryItem(itemId);
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete item');
+    }
   };
 
   return (
@@ -198,6 +256,24 @@ export default function CategoryDetails() {
                         >
                           📝
                         </button>
+                        {isSignedIn && (
+                          <>
+                            <button
+                              onClick={() => handleEditClick(item)}
+                              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold py-1.5 px-3 text-xs rounded-lg transition transform hover:scale-105 shadow-sm"
+                              title="Edit item"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(item.id)}
+                              className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-1.5 px-3 text-xs rounded-lg transition transform hover:scale-105 shadow-sm"
+                              title="Delete item"
+                            >
+                              🗑️
+                            </button>
+                          </>
+                        )}
                       </div>
                       <p className="text-gray-400 text-[10px] text-center">
                         {new Date(item.created_at).toLocaleDateString()}
@@ -284,6 +360,94 @@ export default function CategoryDetails() {
         </>
       )}
     </Layout>
+    
+    {/* Edit Modal */}
+    {editingItem && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Item Type</h2>
+          
+          {editError && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {editError}
+            </div>
+          )}
+
+          <form onSubmit={handleEditSubmit}>
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Item Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={editFormData.name}
+                onChange={(e) =>
+                  setEditFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent outline-none transition"
+                placeholder="Enter item name"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Price (₹)
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={editFormData.price}
+                onChange={(e) =>
+                  setEditFormData((prev) => ({ ...prev, price: parseFloat(e.target.value) || 0 }))
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent outline-none transition"
+                placeholder="Enter price"
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Description (Optional)
+              </label>
+              <textarea
+                name="description"
+                value={editFormData.description}
+                onChange={(e) =>
+                  setEditFormData((prev) => ({ ...prev, description: e.target.value }))
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent outline-none transition"
+                placeholder="Enter item description"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingItem(null);
+                  setEditError(null);
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition"
+                disabled={editLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={editLoading}
+              >
+                {editLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
     
     {/* Recipe Modal */}
     {showRecipeModal && selectedItem && (

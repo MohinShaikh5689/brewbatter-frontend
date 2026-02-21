@@ -94,6 +94,30 @@ export const createCategoryItem = async (categoryId: string, formData: FormData)
   }
 };
 
+export const updateCategoryItem = async (itemTypeId: string, payload: { name: string; price: number; description?: string }) => {
+  try {
+    const response = await apiClient.put(`/controller/type/${itemTypeId}`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating category item:', error);
+    throw error;
+  }
+};
+
+export const deleteCategoryItem = async (itemTypeId: string) => {
+  try {
+    const response = await apiClient.delete(`/controller/type/${itemTypeId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting category item:', error);
+    throw error;
+  }
+};
+
 export interface Ingredient {
   id: string;
   name: string;
@@ -266,6 +290,22 @@ export const createOrder = async (orderData: { customerName: string; phone: stri
     return response.data;
   } catch (error) {
     console.error('Error creating order:', error);
+    throw error;
+  }
+};
+
+export interface DailySale {
+  date: string;
+  total_sales: number;
+  order_count: number;
+}
+
+export const getDailySales = async () => {
+  try {
+    const response = await apiClient.get('/controller/daily-sales');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching daily sales:', error);
     throw error;
   }
 };

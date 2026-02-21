@@ -10,6 +10,7 @@ import { CartProvider } from './context/CartContext';
 import Cart from './components/Cart';
 import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
+import DailySales from './pages/DailySales';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -30,6 +31,7 @@ function App() {
             <Route path="/kot-preview" element={<KOTPreviewPage />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetails />} />
+            <Route path="/daily-sales" element={<DailySales />} />
           </Routes>
           <Cart />
         </BrowserRouter>

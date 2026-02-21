@@ -13,6 +13,11 @@ export default function Sidebar() {
       icon: '🛒',
     },
     {
+      name: 'Daily Sales',
+      path: '/daily-sales',
+      icon: '💰',
+    },
+    {
       name: 'Inventory',
       path: '/inventory',
       icon: '📦',
