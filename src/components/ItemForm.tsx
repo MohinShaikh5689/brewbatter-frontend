@@ -10,6 +10,7 @@ export default function ItemForm({ categoryId, onSuccess }: ItemFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    onlinePrice: '',
     description: '',
     imageUrl: null as File | null,
   });
@@ -69,12 +70,15 @@ export default function ItemForm({ categoryId, onSuccess }: ItemFormProps) {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('price', formData.price);
+      if (formData.onlinePrice.trim()) {
+        data.append('onlinePrice', formData.onlinePrice);
+      }
       data.append('description', formData.description);
       data.append('imageUrl', formData.imageUrl);
 
       await createCategoryItem(categoryId, data);
       setSuccess(true);
-      setFormData({ name: '', price: '', description: '', imageUrl: null });
+      setFormData({ name: '', price: '', onlinePrice: '', description: '', imageUrl: null });
       setPreview(null);
 
       // Reset form
@@ -144,6 +148,22 @@ export default function ItemForm({ categoryId, onSuccess }: ItemFormProps) {
               disabled={loading}
             />
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="onlinePrice" className="block text-sm font-medium text-gray-700 mb-2">
+            Online Price (₹) <span className="text-gray-400">- Optional</span>
+          </label>
+          <input
+            type="number"
+            id="onlinePrice"
+            name="onlinePrice"
+            value={formData.onlinePrice}
+            onChange={handleInputChange}
+            placeholder="e.g., 89 (leave empty for same as regular price)"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            disabled={loading}
+          />
         </div>
 
         <div>

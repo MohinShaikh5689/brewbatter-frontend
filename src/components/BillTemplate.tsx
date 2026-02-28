@@ -13,6 +13,7 @@ interface Order {
   phone: string;
   orderItems: OrderItem[];
   total_amount: number;
+  discount?: number;
   status: string;
   created_at: string;
 }
@@ -87,17 +88,17 @@ const BillTemplate: React.FC<BillTemplateProps> = ({ order }) => {
 
   lines.push('----------------------------');
   const subtotal = order.orderItems.reduce((s, it) => s + it.quantity * it.unit_price, 0);
+  const discountAmount = order.discount || 0;
   const total = Number(order.total_amount ?? subtotal);
   
   lines.push(pad('Subtotal:', 14) + pad('', 4) + pad('₹' + subtotal.toFixed(0), 8, 'left'));
   
-  // Add tax/charges if total differs from subtotal
-  const diff = total - subtotal;
-  if (Math.abs(diff) > 0.01) {
-    const label = diff > 0 ? 'Tax/Charges:' : 'Discount:';
-    lines.push(pad(label, 14) + pad('', 4) + pad('₹' + Math.abs(diff).toFixed(0), 8, 'left'));
+  // Show discount if present
+  if (discountAmount > 0) {
+    lines.push(pad('Discount:', 14) + pad('', 4) + pad('-₹' + discountAmount.toFixed(0), 8, 'left'));
   }
   
+  lines.push(pad('TOTAL:', 14) + pad('', 4) + pad('₹' + total.toFixed(0), 8, 'left'));
   lines.push('----------------------------');
 
 

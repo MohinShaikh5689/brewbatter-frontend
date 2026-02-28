@@ -143,6 +143,12 @@ export default function OrderDetails() {
                 <p className="text-sm text-gray-500">Order Date</p>
                 <p className="text-lg font-medium text-gray-900">{formatDate(order.created_at)}</p>
               </div>
+              {order.discount && order.discount > 0 && (
+                <div>
+                  <p className="text-sm text-gray-500">Discount</p>
+                  <p className="text-lg font-medium text-green-600">-{formatCurrency(order.discount)}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-gray-500">Total Amount</p>
                 <p className="text-2xl font-bold text-green-600">{formatCurrency(order.total_amount)}</p>

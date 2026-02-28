@@ -29,6 +29,7 @@ export interface CategoryItem {
   id: string;
   name: string;
   price: number;
+  onlinePrice?: number;
   description?: string;
   imageUrl?: string;
   menuItemId: string;
@@ -94,7 +95,7 @@ export const createCategoryItem = async (categoryId: string, formData: FormData)
   }
 };
 
-export const updateCategoryItem = async (itemTypeId: string, payload: { name: string; price: number; description?: string }) => {
+export const updateCategoryItem = async (itemTypeId: string, payload: { name: string; price: number; onlinePrice?: number; description?: string }) => {
   try {
     const response = await apiClient.put(`/controller/type/${itemTypeId}`, payload, {
       headers: {
@@ -228,6 +229,7 @@ export interface Order {
   customerName: string;
   phone: string;
   total_amount: number;
+  discount?: number;
   status: string;
 }
 
@@ -248,6 +250,7 @@ export interface OrderDetails {
   customerName: string;
   phone: string;
   total_amount: number;
+  discount?: number;
   status: string;
   orderItems: OrderItemDetail[];
 }
@@ -280,7 +283,7 @@ export const getOrderDetails = async (orderId: string) => {
   }
 };
 
-export const createOrder = async (orderData: { customerName: string; phone: string; items: OrderItem[] }) => {
+export const createOrder = async (orderData: { customerName: string; phone: string; items: OrderItem[]; discount?: number }) => {
   try {
     const response = await apiClient.post('/controller/order', orderData, {
       headers: {

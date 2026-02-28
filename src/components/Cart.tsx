@@ -9,7 +9,11 @@ export default function Cart() {
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
-  const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCart();
+  const [discount, setDiscount] = useState('');
+  const { items, orderMode, setOrderMode, removeFromCart, updateQuantity, clearCart, getTotalPrice, getTotalItems, getItemPrice } = useCart();
+
+  const discountAmount = Number(discount) || 0;
+  const finalTotal = Math.max(0, getTotalPrice() - discountAmount);
 
   const handleCheckout = async () => {
     setIsProcessing(true);
@@ -18,7 +22,7 @@ export default function Cart() {
       const orderItems: OrderItem[] = items.map((item) => ({
         ...(item.type === 'item' ? { itemId: item.id } : { addonId: item.id }),
         quantity: item.quantity,
-        price: item.price,
+        price: getItemPrice(item),
         name: item.name,
       }));
 
@@ -26,6 +30,7 @@ export default function Cart() {
         customerName,
         phone,
         items: orderItems,
+        discount: discountAmount || undefined,
       };
 
       const response = await createOrder(orderDataPayload);
@@ -35,6 +40,7 @@ export default function Cart() {
       clearCart();
       setCustomerName('');
       setPhone('');
+      setDiscount('');
       setShowCheckoutForm(false);
 
       // Open bill preview and KOT in new tabs
@@ -89,6 +95,35 @@ export default function Cart() {
           </button>
         </div>
 
+        {/* Order Mode Toggle */}
+        <div className="px-6 py-3 bg-gray-100 border-b">
+          <div className="flex items-center justify-center gap-4">
+            <span className="text-sm font-medium text-gray-700">Order Mode:</span>
+            <div className="flex bg-white rounded-lg border border-gray-300 overflow-hidden">
+              <button
+                onClick={() => setOrderMode('offline')}
+                className={`px-4 py-2 text-sm font-semibold transition ${
+                  orderMode === 'offline'
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                🏪 Offline
+              </button>
+              <button
+                onClick={() => setOrderMode('online')}
+                className={`px-4 py-2 text-sm font-semibold transition ${
+                  orderMode === 'online'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                🌐 Online
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto p-6">
           {orderSuccess ? (
@@ -115,7 +150,12 @@ export default function Cart() {
                   )}
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                    <p className="text-amber-700 font-bold">₹{item.price}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-amber-700 font-bold">₹{getItemPrice(item)}</p>
+                      {orderMode === 'online' && item.onlinePrice !== undefined && item.onlinePrice !== item.price && (
+                        <span className="text-xs text-gray-400 line-through">₹{item.price}</span>
+                      )}
+                    </div>
                     <span className="text-xs text-gray-500 uppercase">{item.type}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -202,9 +242,35 @@ export default function Cart() {
                     required
                   />
                 </div>
-                <div className="flex justify-between items-center py-3 border-t border-b">
-                  <span className="text-lg font-bold text-gray-800">Total:</span>
-                  <span className="text-xl font-bold text-amber-700">₹{getTotalPrice()}</span>
+                <div>
+                  <label htmlFor="discount" className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount (₹) <span className="text-gray-400">- Optional</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="discount"
+                    value={discount}
+                    onChange={(e) => setDiscount(e.target.value)}
+                    placeholder="Enter discount amount"
+                    min="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div className="py-3 border-t border-b space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Subtotal:</span>
+                    <span className="text-sm text-gray-600">₹{getTotalPrice()}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-600">Discount:</span>
+                      <span className="text-sm text-green-600">-₹{discountAmount}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-gray-800">Total:</span>
+                    <span className="text-xl font-bold text-amber-700">₹{finalTotal}</span>
+                  </div>
                 </div>
                 <div className="flex gap-4">
                   <button

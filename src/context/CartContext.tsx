@@ -4,25 +4,32 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  onlinePrice?: number;
   quantity: number;
   imageUrl?: string;
   type: 'item' | 'addon';
 }
 
+export type OrderMode = 'offline' | 'online';
+
 interface CartContextType {
   items: CartItem[];
+  orderMode: OrderMode;
+  setOrderMode: (mode: OrderMode) => void;
   addToCart: (item: Omit<CartItem, 'quantity'>) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
+  getItemPrice: (item: CartItem) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [orderMode, setOrderMode] = useState<OrderMode>('offline');
 
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setItems((prev) => {
@@ -55,8 +62,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
+  const getItemPrice = (item: CartItem) => {
+    if (orderMode === 'online' && item.onlinePrice !== undefined && item.onlinePrice !== null) {
+      return item.onlinePrice;
+    }
+    return item.price;
+  };
+
   const getTotalPrice = () => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
+    return items.reduce((total, item) => total + getItemPrice(item) * item.quantity, 0);
   };
 
   const getTotalItems = () => {
@@ -67,12 +81,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     <CartContext.Provider
       value={{
         items,
+        orderMode,
+        setOrderMode,
         addToCart,
         removeFromCart,
         updateQuantity,
         clearCart,
         getTotalPrice,
         getTotalItems,
+        getItemPrice,
       }}
     >
       {children}

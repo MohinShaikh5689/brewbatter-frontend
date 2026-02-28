@@ -31,7 +31,7 @@ export default function CategoryDetails() {
 
   // Edit state
   const [editingItem, setEditingItem] = useState<CategoryItem | null>(null);
-  const [editFormData, setEditFormData] = useState({ name: '', price: 0, description: '' });
+  const [editFormData, setEditFormData] = useState({ name: '', price: 0, onlinePrice: 0, description: '' });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
@@ -87,6 +87,7 @@ export default function CategoryDetails() {
     setEditFormData({
       name: item.name,
       price: item.price,
+      onlinePrice: item.onlinePrice || 0,
       description: item.description || '',
     });
     setEditError(null);
@@ -111,6 +112,7 @@ export default function CategoryDetails() {
       await updateCategoryItem(editingItem.id, {
         name: editFormData.name,
         price: editFormData.price,
+        onlinePrice: editFormData.onlinePrice || undefined,
         description: editFormData.description,
       });
       setRefreshTrigger((prev) => prev + 1);
@@ -228,7 +230,12 @@ export default function CategoryDetails() {
                     )}
                     <div className="p-3">
                       <h3 className="font-bold text-sm text-gray-800 mb-1 truncate" title={item.name}>{item.name}</h3>
-                      <p className="text-amber-700 font-bold text-base mb-2">₹{item.price}</p>
+                      <div className="mb-2">
+                        <p className="text-amber-700 font-bold text-base">₹{item.price}</p>
+                        {item.onlinePrice !== undefined && item.onlinePrice !== null && (
+                          <p className="text-green-600 text-xs">🌐 Online: ₹{item.onlinePrice}</p>
+                        )}
+                      </div>
                       {item.description && (
                         <p className="text-gray-600 text-xs mb-2 line-clamp-2" title={item.description}>{item.description}</p>
                       )}
@@ -239,6 +246,7 @@ export default function CategoryDetails() {
                               id: item.id,
                               name: item.name,
                               price: item.price,
+                              onlinePrice: item.onlinePrice,
                               imageUrl: item.imageUrl,
                               type: 'item',
                             })
@@ -403,6 +411,24 @@ export default function CategoryDetails() {
                 }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent outline-none transition"
                 placeholder="Enter price"
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Online Price (₹) <span className="text-gray-400 font-normal">- Optional</span>
+              </label>
+              <input
+                type="number"
+                name="onlinePrice"
+                value={editFormData.onlinePrice || ''}
+                onChange={(e) =>
+                  setEditFormData((prev) => ({ ...prev, onlinePrice: parseFloat(e.target.value) || 0 }))
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition"
+                placeholder="Enter online price (leave empty for same as regular)"
                 step="0.01"
                 min="0"
               />
